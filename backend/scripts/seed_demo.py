@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
 from src.config.settings import IS_MYSQL, engine
 from src.constants.workflow import Role
-from src.models.tables import audit, cases, evidence, runs, schema, users
+from src.models.tables import audit, bookings, cases, evidence, runs, schema, trips, users
 from src.services.domain import SPEC
 from src.services.security import hash_password
 from src.utils.time import utc_time
@@ -25,8 +25,12 @@ def seed():
                 'password_hash': hash_password('Demo-Walkthrough-2026')})
         keep_existing(conn, cases, 'slug', {'slug': 'demo', 'title': SPEC['name'],
             'payload': SPEC['sample'], 'author': 'demo', 'created_at': utc_time()})
+        for trip_no, capacity_g, capacity_pieces in [('CD-0901', 40000, 25), ('CD-0902', 25000, 15)]:
+            keep_existing(conn, trips, 'trip_no', {'trip_no': trip_no, 'capacity_g': capacity_g,
+                'capacity_pieces': capacity_pieces, 'created_by': 'demo',
+                'created_at': utc_time(), 'updated_at': utc_time()})
         return {table.name: conn.execute(select(func.count()).select_from(table)).scalar_one()
-                for table in (users, cases, runs, evidence, audit)}
+                for table in (users, cases, runs, evidence, audit, trips, bookings)}
 
 
 if __name__ == '__main__':

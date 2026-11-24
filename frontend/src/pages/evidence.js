@@ -1,8 +1,18 @@
 import {heading, panel} from '../components/common/heading.js';
 import {entries, records} from '../components/common/records.js';
+import {bookingLabels} from '../constants/workflow.js';
 import {topic} from '../constants/project.js';
 import {date, el, esc} from '../utils/dom.js';
 import {submit} from '../hooks/submit.js';
+
+function bookingPanel(state, current) {
+  const rows = state.bookings?.evidence===current.id ? state.bookings.rows : [];
+  if (!rows.length) return '';
+  const body = rows.map(row=>[esc(row.batch_id), esc(row.revision), esc(row.grade),
+    `${esc(row.weight_g)} 克 / ${esc(row.pieces)} 件`,
+    esc(bookingLabels[row.status] || row.status), esc(row.trip_no || '—')]);
+  return panel('转裁批次车次预约', records(['批次','修订号','等级','重量 / 件数','预约状态','车次'], body));
+}
 
 export function evidencePage(state, identity) {
   const current = state.evidence.find(row=>row.id===identity) || state.evidence[0];
@@ -16,7 +26,7 @@ export function evidencePage(state, identity) {
   const history = state.evidence.map(row=>[`<a href="#evidence/${row.id}">执行 ${row.run_id}</a>`, esc(row.report.summary), esc(row.reviewer || '待复核')]);
   return `${heading(topic.modules[3], report.summary, `<button id="download" data-id="${current.id}">导出证据</button>`)}
     <div class="spread evidence-top"><dl class="metrics">${metrics}</dl><aside class="brief"><h2>复核签署</h2>${review}<details><summary>结果校验码</summary><code class="digest">${esc(current.digest)}</code></details></aside></div>
-    ${sections}<details><summary>历史证据</summary>${records(['执行','结论','复核'], history)}</details>`;
+    ${sections}${bookingPanel(state, current)}<details><summary>历史证据</summary>${records(['执行','结论','复核'], history)}</details>`;
 }
 
 export function bindEvidence(api, update, fail) {

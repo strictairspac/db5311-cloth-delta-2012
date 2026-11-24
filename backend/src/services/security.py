@@ -50,3 +50,9 @@ def reviewer(user=Depends(current_user)):
     if user['role'] != Role.REVIEWER:
         raise HTTPException(403, '需要复核员权限')
     return user['sub']
+
+
+def staff(user=Depends(current_user)):
+    if user['role'] not in (Role.OPERATOR, Role.REVIEWER):
+        raise HTTPException(403, '需要经办员或复核员权限')
+    return user['sub']

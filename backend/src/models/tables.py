@@ -1,5 +1,5 @@
 from sqlalchemy import (JSON, Column, ForeignKey, Integer, MetaData, String,
-                        Table, Text)
+                        Table, Text, UniqueConstraint)
 
 schema = MetaData()
 users = Table('accounts', schema,
@@ -38,3 +38,24 @@ audit = Table('audit_events', schema,
     Column('action', String(32), nullable=False),
     Column('reference', String(50), nullable=False),
     Column('created_at', String(32), nullable=False))
+trips = Table('vehicle_trips', schema,
+    Column('id', Integer, primary_key=True),
+    Column('trip_no', String(64), nullable=False, unique=True),
+    Column('capacity_g', Integer, nullable=False),
+    Column('capacity_pieces', Integer, nullable=False),
+    Column('created_by', String(40), nullable=False),
+    Column('created_at', String(32), nullable=False),
+    Column('updated_at', String(32), nullable=False))
+bookings = Table('trip_bookings', schema,
+    Column('id', Integer, primary_key=True),
+    Column('evidence_id', ForeignKey('business_evidence.id'), nullable=False, index=True),
+    Column('batch_id', String(64), nullable=False),
+    Column('revision', Integer, nullable=False),
+    Column('grade', String(64), nullable=False),
+    Column('weight_g', Integer, nullable=False),
+    Column('pieces', Integer, nullable=False),
+    Column('trip_id', ForeignKey('vehicle_trips.id'), index=True),
+    Column('status', String(20), nullable=False),
+    Column('booked_at', String(32), nullable=False),
+    Column('updated_at', String(32), nullable=False),
+    UniqueConstraint('evidence_id', 'batch_id'))
